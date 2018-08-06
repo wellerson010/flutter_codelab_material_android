@@ -1,10 +1,25 @@
 import 'package:flutter/material.dart';
 import 'model/product.dart';
 import 'package:intl/intl.dart';
+import 'backdrop.dart';
+import 'colors.dart';
+import 'category_menu_page.dart';
 
-class Store extends StatelessWidget {
+class Store extends StatefulWidget {
+  @override
+  _StoreState createState() => _StoreState();
+}
+
+class _StoreState extends State<Store> {
+  Category _currentCategory = Category.all;
+
+  void _onCategoryTap(Category c){
+    setState((){
+      _currentCategory = c;
+    });
+  }
   List<Card> _buildGridCards(BuildContext context){
-    List<Product> products = ProductRepository().getProducts(Category.all);
+    List<Product> products = ProductRepository().getProducts(_currentCategory);
 
     if (products == null || products.isEmpty){
       return const <Card>[];
@@ -50,31 +65,19 @@ class Store extends StatelessWidget {
 
   @override
   Widget build(BuildContext context){
-    return Scaffold(
-      appBar: AppBar(
-        brightness: Brightness.light,
-        title: Text('SHRINE'),
-        leading: IconButton(
-          icon: Icon(Icons.menu, semanticLabel: 'menu',),
-          onPressed: (){},
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.search, semanticLabel: 'search',),
-            onPressed: (){},
-          ),
-          IconButton(
-            icon: Icon(Icons.tune, semanticLabel: 'filter',),
-            onPressed: (){},
-          ),
-        ],
-        centerTitle: true,
+    return Backdrop(
+      category: _currentCategory,
+      frontTitle: Text('SHRINE'),
+      backTitle: Text('Menu'),
+      frontLayer: GridView.count(
+          crossAxisCount: 2,
+          padding: EdgeInsets.all(16.0),
+          childAspectRatio: 8.0 / 9.0,
+          children: _buildGridCards(context)
       ),
-      body: GridView.count(
-        crossAxisCount: 2,
-        padding: EdgeInsets.all(16.0),
-        childAspectRatio: 8.0 / 9.0,
-        children: _buildGridCards(context)
+      backLayer: CategoryMenuPage(
+        currentCategory: _currentCategory,
+        onCategoryTap: _onCategoryTap,
       )
     );
   }
